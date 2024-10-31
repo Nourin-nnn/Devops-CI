@@ -43,5 +43,5 @@ jobs:
       - name: Push Image to Docker Hub
         run: |
           echo "Pushing Docker image to Docker Hub..."
-          docker push nourinnn/devopsci-cd:v1
+          docker push nourinnn/devops-ci-cd:v1
           docker push nourinnn/devops-ci-cd:${{ github.sha }}
