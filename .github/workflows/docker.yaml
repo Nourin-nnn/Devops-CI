@@ -17,13 +17,13 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v3  
-
+        
       - name: Set up Python
-        uses: actions/setup-python@v4 
+        uses: actions/setup-python@v4  
         with:
           python-version: '3.12'  
 
-      - name: Install dependencies
+      - name: Install dependenciesy
         run: |
           echo "Installing dependencies..."
           pip install -r requirements.txt  
