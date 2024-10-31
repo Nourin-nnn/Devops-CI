@@ -4,14 +4,16 @@ on:
   push:
     branches:
       - main
+    tags:
+      - 'v*' 
   pull_request:
     branches:
       - main
 
 jobs:
-  # First Job: Build and Push Docker Image
   build_and_push:
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v3  
@@ -35,13 +37,12 @@ jobs:
       - name: Build Docker Image
         run: |
           echo "Building Docker image..."
-          docker build -t nourinnn/devops-ci-cd:v1 .
-
-      - name: Tag Image with Commit SHA
-        run: docker tag nourinnn/devops-ci-cd:v1 nourinnn/devops-ci-cd:${{ github.sha }}
+          # Use a tag based on the version if available, else fallback to commit SHA
+          IMAGE_TAG=${{ github.ref_name || github.sha }}
+          docker build -t nourinnn/devops-ci-cd:${IMAGE_TAG} .
 
       - name: Push Image to Docker Hub
         run: |
           echo "Pushing Docker image to Docker Hub..."
-          docker push nourinnn/devops-ci-cd:v1
-          docker push nourinnn/devops-ci-cd:${{ github.sha }}
+          IMAGE_TAG=${{ github.ref_name || github.sha }}
+          docker push nourinnn/devops-ci-cd:${IMAGE_TAG}
