@@ -1,0 +1,47 @@
+name: CI/CD Pipeline for Docker App
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  # First Job: Build and Push Docker Image
+  build_and_push:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3  
+
+      - name: Set up Python
+        uses: actions/setup-python@v4 
+        with:
+          python-version: '3.12'  
+
+      - name: Install dependencies
+        run: |
+          echo "Installing dependencies..."
+          pip install -r requirements.txt  
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_NAME }}  
+          password: ${{ secrets.DOCKER_TOKEN }}
+
+      - name: Build Docker Image
+        run: |
+          echo "Building Docker image..."
+          docker build -t nourinnn/devops-ci-cd:v1 .
+
+      - name: Tag Image with Commit SHA
+        run: docker tag nourinnn/devops-ci-cd:v1 nourinnn/devops-ci-cd:${{ github.sha }}
+
+      - name: Push Image to Docker Hub
+        run: |
+          echo "Pushing Docker image to Docker Hub..."
+          docker push nourinnn/devopsci-cd:v1
+          docker push nourinnn/devops-ci-cd:${{ github.sha }}
