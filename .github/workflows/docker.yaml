@@ -11,13 +11,16 @@ on:
       - main
 
 jobs:
-  build_and_push:
+  checkout_code:
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout code
         uses: actions/checkout@v3  
-        
+
+  setup_python:
+    runs-on: ubuntu-latest
+    needs: checkout_code  # This job depends on checkout_code
+    steps:
       - name: Set up Python
         uses: actions/setup-python@v4  
         with:
@@ -28,6 +31,10 @@ jobs:
           echo "Installing dependencies..."
           pip install -r requirements.txt  
 
+  build_and_push:
+    runs-on: ubuntu-latest
+    needs: setup_python  # This job depends on setup_python
+    steps:
       - name: Log in to Docker Hub
         uses: docker/login-action@v3
         with:
