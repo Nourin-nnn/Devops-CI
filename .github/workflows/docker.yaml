@@ -19,8 +19,8 @@ jobs:
 
   setup_python:
     runs-on: ubuntu-latest
-    needs: checkout_code  # This job depends on checkout_code
-    steps:
+    needs: checkout_code  
+    steps:  
       - name: Set up Python
         uses: actions/setup-python@v4  
         with:
@@ -33,8 +33,7 @@ jobs:
 
   build_and_push:
     runs-on: ubuntu-latest
-    needs: setup_python  # This job depends on setup_python
-    steps:
+    needs: setup_python 
       - name: Log in to Docker Hub
         uses: docker/login-action@v3
         with:
