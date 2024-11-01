@@ -28,6 +28,12 @@ jobs:
           echo "Installing dependencies..."
           pip install -r requirements.txt  
 
+      - name: Run Tests
+        run: |
+          echo "Running tests..."
+          pip install pytest
+          pytest
+
       - name: Log in to Docker Hub
         uses: docker/login-action@v3
         with:
