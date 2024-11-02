@@ -11,7 +11,9 @@ on:
       - main
 
 permissions:
-  contents: write
+  contents: 
+    read: true  # Allow read access
+    write: true  # Allow write access
 
 jobs:
   build:
@@ -57,7 +59,7 @@ jobs:
         uses: actions/checkout@v3
         with:
           repository: 'Nourin-nnn/Devops-CD'
-          token: ${{ secrets.GIT_TOKEN }}
+          token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Modify the image in the deployment file
         run: |
