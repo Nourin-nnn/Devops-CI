@@ -9,11 +9,9 @@ on:
   pull_request:
     branches:
       - main
-
+      
 permissions:
-  contents: 
-    read: true  # Allow read access
-    write: true  # Allow write access
+  contents: write
 
 jobs:
   build:
