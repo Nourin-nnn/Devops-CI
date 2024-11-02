@@ -5,52 +5,66 @@ on:
     branches:
       - main
     tags:
-      - 'v*'
+      - "v*"
   pull_request:
     branches:
       - main
 
+permissions:
+  contents: read
+
 jobs:
-  build_and_push:
+  build:
     runs-on: ubuntu-latest
-
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-
-      - name: Set up Python
+      - uses: actions/checkout@v3
+      - name: Set up Python 3.12
         uses: actions/setup-python@v4
         with:
-          python-version: '3.12'
-
+          python-version: "3.12"
       - name: Install dependencies
         run: |
-          echo "Installing dependencies..."
-          pip install -r requirements.txt
-
-      - name: Run Tests
-        run: |
-          echo "Running tests..."
+          python -m pip install --upgrade pip
           pip install pytest
-          pytest
+          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
 
-      - name: Log in to Docker Hub
-        uses: docker/login-action@v3
-        with:
-          username: ${{ secrets.DOCKER_NAME }}
-          password: ${{ secrets.DOCKER_TOKEN }}
-
-      - name: Checkout code
+  docker:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
         uses: actions/checkout@v3
-
-      - name: Build Docker Image
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v2
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+      - name: Login to Docker Hub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKERHUB_NAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+      - name: Build and push
+        uses: docker/build-push-action@v4
+        with:
+          context: .
+          push: true
+          tags: nourinnn/devops-ci-cd:v${{ github.run_number }}
+          
+  modifygit:
+    needs: docker
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        name: Checkout repository
+      - name: Modify the deployment image
         run: |
-          echo "Building Docker image..."
-          IMAGE_TAG=v${{ github.run_number }}
-          docker build -t nourinnn/devops-ci-cd:${IMAGE_TAG} .
-
-      - name: Push Image to Docker Hub
-        run: |
-          echo "Pushing Docker image to Docker Hub..."
-          IMAGE_TAG=v${{ github.run_number }}
-          docker push nourinnn/devops-ci-cd:${IMAGE_TAG}
+          git config user.email "nourin114cse.cuet@gmail.com"
+          git config user.name "Nourin-nnn"
+          cat k8s/deployment.yaml
+          sed -i "s+nourinnn/devops-ci-cd:.*+nourinnn/devops-ci-cd:v$RUN_NUMBER+g" k8s/deployment.yaml
+          cat k8s/deployment.yaml
+          git add k8s/deployment.yaml
+          git commit -m "Updated deployment image by GitHub Actions: ${{ github.run_number }}"
+          git push origin main
+        env:
+          RUN_NUMBER: ${{ github.run_number }}
