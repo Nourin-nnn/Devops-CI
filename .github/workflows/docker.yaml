@@ -53,21 +53,17 @@ jobs:
     needs: docker
     runs-on: ubuntu-latest
     steps:
-      - name: Clone Devops-CD repository
+      - name: Checkout code from Devops-CD
         uses: actions/checkout@v3
         with:
           repository: 'Nourin-nnn/Devops-CD'
-          token: ${{ secrets.GIT_TOKEN }}
-          path: Devops-CD
+          token: ${{ secrets.GIT_PASSWORD }}
 
-      - name: Modify the deployment image tag
+      - name: Modify the image in the deployment file
         run: |
-          cd Devops-CD/k8s
           git config user.email "nourin114cse.cuet@gmail.com"
           git config user.name "Nourin-nnn"
-          sed -i "s+nourinnn/devops-ci-cd.*+nourinnn/devops-ci-cd:v${{ github.run_number }}+g" deployment.yaml
-          git add deployment.yaml
+          sed -i "s+nourinnn/devops-ci-cd.*+nourinnn/devops-ci-cd:v${{ github.run_number }}+g" k8s/deployment.yaml
+          git add k8s/deployment.yaml
           git commit -m "Updated image tag to v${{ github.run_number }}"
           git push origin main
-        env:
-          RUN_NUMBER: ${{ github.run_number }}
