@@ -5,13 +5,13 @@ on:
     branches:
       - main
     tags:
-      - "v*"
+      - 'v*'
   pull_request:
     branches:
       - main
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   build:
@@ -32,8 +32,7 @@ jobs:
     needs: build
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v3
+      - uses: actions/checkout@v3
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v2
       - name: Set up Docker Buildx
@@ -49,22 +48,26 @@ jobs:
           context: .
           push: true
           tags: nourinnn/devops-ci-cd:v${{ github.run_number }}
-          
+
   modifygit:
     needs: docker
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
-        name: Checkout repository
-      - name: Modify the deployment image
+      - name: Clone Devops-CD repository
+        uses: actions/checkout@v3
+        with:
+          repository: 'Nourin-nnn/Devops-CD'
+          token: ${{ secrets.GIT_TOKEN }}
+          path: Devops-CD
+
+      - name: Modify the deployment image tag
         run: |
+          cd Devops-CD/k8s
           git config user.email "nourin114cse.cuet@gmail.com"
           git config user.name "Nourin-nnn"
-          cat k8s/deployment.yaml
-          sed -i "s+nourinnn/devops-ci-cd:.*+nourinnn/devops-ci-cd:v$RUN_NUMBER+g" k8s/deployment.yaml
-          cat k8s/deployment.yaml
-          git add k8s/deployment.yaml
-          git commit -m "Updated deployment image by GitHub Actions: ${{ github.run_number }}"
+          sed -i "s+nourinnn/devops-ci-cd.*+nourinnn/devops-ci-cd:v${{ github.run_number }}+g" deployment.yaml
+          git add deployment.yaml
+          git commit -m "Updated image tag to v${{ github.run_number }}"
           git push origin main
         env:
           RUN_NUMBER: ${{ github.run_number }}
