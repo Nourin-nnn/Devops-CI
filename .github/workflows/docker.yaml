@@ -47,7 +47,7 @@ jobs:
         with:
           context: .
           push: true
-          tags: nourinnn/devops-ci-cd:v${{ github.run_number }}
+          tags: ${{ secrets.DOCKER_NAME }}/devops-ci-cd:v${{ github.run_number }}
 
   modifygit:
     needs: docker
@@ -56,14 +56,15 @@ jobs:
       - name: Checkout code from Devops-CD
         uses: actions/checkout@v3
         with:
-          repository: 'Nourin-nnn/Devops-CD'
+          repository: '${{secrets.GIT_USERNAME}}/Devops-CD'
           token: ${{ secrets.GIT_TOKEN }}
 
       - name: Modify the image in the deployment file
         run: |
-          git config user.email "nourin114cse.cuet@gmail.com"
-          git config user.name "Nourin-nnn"
-          sed -i "s+nourinnn/devops-ci-cd.*+nourinnn/devops-ci-cd:v${{ github.run_number }}+g" k8s/deployment.yaml
+          git config user.email "${{secrets.GIT_EMAIL}}"
+          git config user.name "${{secrets.GIT_USERNAME}}"
+
+          sed -i "s+${{ secrets.DOCKER_NAME }}/devops-ci-cd.*+${{ secrets.DOCKER_NAME }}/devops-ci-cd:v${{ github.run_number }}+g" k8s/deployment.yaml
           git add k8s/deployment.yaml
           git commit -m "Updated image tag to v${{ github.run_number }}"
           git push origin main
